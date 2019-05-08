@@ -18,7 +18,7 @@ public class PlayerController : MonoBehaviour
     }
 
     // Update is called once per frame
-    void Update()
+    void FixedUpdate()
     {
         movimentoH = Input.GetAxis("Horizontal");
         movimentoV = Input.GetAxis("Vertical");
@@ -34,6 +34,8 @@ public class PlayerController : MonoBehaviour
         if (other.gameObject.CompareTag("PowerUp"))
         {
             other.gameObject.SetActive(false);
+            GameController.instancia.AtualizaPontos(1f);
+            
         }
     }
 }
