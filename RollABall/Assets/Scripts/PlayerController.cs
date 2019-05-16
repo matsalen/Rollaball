@@ -34,6 +34,7 @@ public class PlayerController : MonoBehaviour
         if (other.gameObject.CompareTag("PowerUp"))
         {
             other.gameObject.SetActive(false);
+            GameController.instancia.AtualizaTempo(1f);
             GameController.instancia.AtualizaPontos(1f);
             
         }
