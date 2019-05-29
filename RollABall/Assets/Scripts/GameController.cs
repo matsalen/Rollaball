@@ -3,6 +3,9 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
+#if UNITY_EDITOR
+using UnityEditor;
+#endif
 
 public class GameController : MonoBehaviour
 {
@@ -17,10 +20,12 @@ public class GameController : MonoBehaviour
     [SerializeField] private Text textoGameOver;
     [SerializeField] private Text textoRestart;
     [SerializeField] private Text textoRecord;
+    [SerializeField] private GameObject painelOpcoes;
     [SerializeField] private float tempoRestante;
 
     private float pontos;
     private bool gameOver;
+    private bool pause;
     private int powerUps;
     private float record;
 
@@ -38,7 +43,7 @@ public class GameController : MonoBehaviour
             }
         }
         pontos = 0;
-        gameOver = false;
+        gameOver = false; 
     }
 
     // Start is called before the first frame update
@@ -50,6 +55,7 @@ public class GameController : MonoBehaviour
         AtualizaTempo();
         textoRestart.text = "";
         textoGameOver.text = "";
+        pause = false;
     }
 
     // Update is called once per frame
@@ -64,15 +70,45 @@ public class GameController : MonoBehaviour
             {                
                 FimDeJogo("TIME OVER!", corTextoDerrota);
             }
+
+            if (Input.GetButtonDown("Pause"))
+            {
+                GamePause();
+            }
             
         }
-            else
-            {
-                if (Input.GetButtonDown("Submit"))
+        else
+        {
+
+            if (Input.GetButtonDown("Submit"))
                 {
                     Restart();
                 }
+        }
+
+
+    }
+
+    public void GamePause()
+    {
+        pause = !pause;
+        if (pause)
+        {
+            // PAUSA O JOGO
+            Time.timeScale = 0;
+            painelOpcoes.SetActive(pause);
+            foreach (Transform filho in painelOpcoes.transform)
+            {
+                if (filho.name == "Continuar")
+                    filho.gameObject.GetComponent<Button>().Select();
             }
+        }
+        else
+        {
+            // RETOMA O JOGO
+            Time.timeScale = 1;
+            painelOpcoes.SetActive(pause);
+        }
     }
 
     public void FimDeJogo(string msg, Color cor)
@@ -80,10 +116,19 @@ public class GameController : MonoBehaviour
         EnviaNovoRecord(pontos);
         textoGameOver.text = msg;
         textoGameOver.color = cor;
-        textoRestart.text = "Pressione 'ENTER' para reiniciar";
+        //textoRestart.text = "Pressione 'ENTER' para reiniciar";
         gameOver = true;
         pc.enabled = false;
         rb.freezeRotation = true;
+
+        painelOpcoes.SetActive(true);
+        foreach(Transform filho in painelOpcoes.transform)
+        {
+            if (filho.name == "Continuar")
+                filho.gameObject.GetComponent<Button>().enabled = false;
+            if (filho.name == "Reiniciar")
+                filho.gameObject.GetComponent<Button>().Select();
+        }
     }
 
     private void CarregaRecord()
@@ -125,8 +170,19 @@ public class GameController : MonoBehaviour
         tempoRestante += incremento;
         AtualizaTempo();
     }
+
     public void Restart()
     {
+        if (pause) GamePause();
         SceneManager.LoadScene("SampleScene");
+    }
+
+    public void Sair()
+    {
+#if UNITY_EDITOR
+        EditorApplication.isPlaying = false;
+#else
+        Application.Quit();
+#endif
     }
 }
